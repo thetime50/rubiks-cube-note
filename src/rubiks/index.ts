@@ -7,8 +7,8 @@ import Control, {MouseControl, TouchControl} from "./core/control";
 
 const setSize = (container: Element, camera: PerspectiveCamera, renderer: WebGLRenderer) => {
     // Set the camera's aspect ratio
-    camera.aspect = container.clientWidth / container.clientHeight;
-    camera.updateProjectionMatrix();
+    camera.aspect = container.clientWidth / container.clientHeight; // 设置长宽比 PerspectiveCamera 的第二个参数
+    camera.updateProjectionMatrix(); // 手动更新相机投影矩阵
 
     // update the size of the renderer AND the canvas
     renderer.setSize(container.clientWidth, container.clientHeight);
@@ -18,7 +18,7 @@ const setSize = (container: Element, camera: PerspectiveCamera, renderer: WebGLR
 };
 
 class Rubiks {
-    private camera: PerspectiveCamera;
+    private camera: PerspectiveCamera; // 透视相机
     private scene: Scene;
     private cube: Cube | undefined;
     private renderer: WebGLRenderer;
@@ -34,8 +34,8 @@ class Rubiks {
             setSize(container, this.camera, this.renderer);
             this.render();
         });
-        setSize(container, this.camera, this.renderer);
-        this.setOrder(3);
+        setSize(container, this.camera, this.renderer); // 屏幕 相机 渲染 适配
+        this.setOrder(3); // 设置阶数
 
         this.startAnimation();
     }
@@ -56,7 +56,7 @@ class Rubiks {
         const coarseSize = cube.getCoarseCubeSize(this.camera, {w: winW, h: winH});
 
         const ratio = Math.max(2.2 / (winW / coarseSize), 2.2 / (winH / coarseSize));
-        this.camera.position.z *= ratio;
+        this.camera.position.z *= ratio; // 这里每次累乘有点奇怪
         this._controls.push(
             new MouseControl(this.camera, this.scene, this.renderer, cube),
             new TouchControl(this.camera, this.scene, this.renderer, cube)
@@ -91,7 +91,7 @@ class Rubiks {
     }
 
     private startAnimation() {
-        const animation = (time: number) => {
+        const animation = (time: number) => { // 页面运行时间
             time /= 1000; // convert to seconds
             if (this.cube) {
                 if (time < 2) {
@@ -100,7 +100,7 @@ class Rubiks {
                     this.cube.position.z = 0;
                 }
                 const dis = time;
-                this.cube.position.y = Math.sin(dis) * 0.3;
+                this.cube.position.y = Math.sin(dis) * 0.1; // 悬浮动画
             }
 
             this.render();
