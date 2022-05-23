@@ -2,6 +2,12 @@ import {Vector3} from "three";
 
 type ColorRepresentation = string | number;
 
+/**
+ * 魔法数据类，主要是魔法数据的结构 生成 保存 恢复
+ *   数据包括 颜色 阶数 每个小面的数据
+ */
+
+// 每个小面的数据类型
 export interface CubeElement {
     color: ColorRepresentation;
     pos: Vector3;
@@ -40,7 +46,7 @@ class CubeData {
             this.elements = this.getLocalData();
         }
 
-        if (this.elements.length === this.cubeOrder * this.cubeOrder * 6) {
+        if (this.elements.length === this.cubeOrder * this.cubeOrder * 6) { // 这里是每一个小面都是item吗
             return;
         }
 

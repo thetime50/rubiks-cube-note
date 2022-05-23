@@ -16,6 +16,7 @@ const getTemPos = (square: SquareMesh, squareSize: number) => {
     return pos.add(moveVect);
 };
 
+// http://www.webgl3d.cn/threejs/docs/#api/zh/objects/Group
 export class Cube extends Group {
     private data: CubeData;
     public state!: CubeState;
@@ -47,7 +48,7 @@ export class Cube extends Group {
     public constructor(order = 3) {
         super();
 
-        this.data = new CubeData(order);
+        this.data = new CubeData(order); // 初始化魔方数据
 
         this.createChildrenByData();
 
@@ -60,7 +61,7 @@ export class Cube extends Group {
         this.remove(...this.children);
 
         for (let i = 0; i < this.data.elements.length; i++) {
-            const square = createSquare(new Color(this.data.elements[i].color), this.data.elements[i]);
+            const square = createSquare(new Color(this.data.elements[i].color), this.data.elements[i]); // 把数据转换为 Object3D 物体
             this.add(square);
         }
 
