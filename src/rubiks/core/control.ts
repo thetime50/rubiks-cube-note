@@ -119,6 +119,7 @@ abstract class Control {
                 const rotateDir = moveVect.rotateAround(new Vector2(0, 0), Math.PI * 0.5);
 
                 rotateAroundWorldAxis(this.cube, new Vector3(rotateDir.x, rotateDir.y, 0), rotateAngle);
+                rotateAroundWorldAxis(this.cube.haxes, new Vector3(rotateDir.x, rotateDir.y, 0), rotateAngle); // 旋转魔方辅助坐标轴
             }
             this.renderer.render(this.scene, this.camera);
         }

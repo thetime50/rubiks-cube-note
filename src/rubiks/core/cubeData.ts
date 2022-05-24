@@ -10,8 +10,8 @@ type ColorRepresentation = string | number;
 // 每个小面的数据类型
 export interface CubeElement {
     color: ColorRepresentation;
-    pos: Vector3;
-    normal: Vector3;
+    pos: Vector3; // 每个小方面物体的中心位置
+    normal: Vector3; // 每个小方面物体的法向量 (指向的点)
     withLogo?: boolean;
 }
 
@@ -26,12 +26,13 @@ class CubeData {
      * 魔方颜色：top、bottom、left、right、front、back
      */
     private colors: CubeColor;
-    private _size = 1;
+    private _size = 1; // 改变这个会影响旋转出错 可能是一个无效的变量(功能不完整)
     public get elementSize() {
         return this._size;
     }
     public elements: CubeElement[] = [];
     public constructor(cubeOrder = 3, colors: CubeColor = ["#fb3636", "#ff9351", "#fade70", "#9de16f", "#51acfa", "#da6dfa"]) {
+        // 红橘黄绿蓝紫
         this.cubeOrder = cubeOrder;
         this.colors = colors;
         this.initElements();
@@ -58,7 +59,7 @@ class CubeData {
      */
     public initialFinishData() {
         this.elements = [];
-        const border = (this.cubeOrder * this._size) / 2 - 0.5;
+        const border = (this.cubeOrder * this._size) / 2 - 0.5; // 中心点位置的数值范围
 
         // top and bottom
         for (let x = -border; x <= border; x++) {
@@ -75,7 +76,9 @@ class CubeData {
                     normal: new Vector3(0, -1, 0)
                 });
             }
+            // console.log('this.elements.length', this.elements.length)
         }
+        // console.log('* this.elements.length', this.elements.length)
 
         // left and right
         for (let y = -border; y <= border; y++) {

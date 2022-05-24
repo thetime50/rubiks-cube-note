@@ -1,4 +1,4 @@
-import {Camera, Color, Group, Matrix4, Vector2, Vector3} from "three";
+import { Camera, Color, Group, Matrix4, Vector2, Vector3, AxesHelper } from "three";
 import {setFinish} from "./statusbar";
 import {getAngleBetweenTwoVector2, equalDirection} from "../util/math";
 import {ndcToScreen} from "../util/transform";
@@ -20,6 +20,7 @@ const getTemPos = (square: SquareMesh, squareSize: number) => {
 export class Cube extends Group {
     private data: CubeData;
     public state!: CubeState;
+    public haxes: AxesHelper; // 辅助坐标轴
     public get squares() {
         return this.children as SquareMesh[];
     }
@@ -49,11 +50,14 @@ export class Cube extends Group {
         super();
 
         this.data = new CubeData(order); // 初始化魔方数据
+        this.haxes = new AxesHelper(this.order * 0.8); // 初始化辅助坐标轴
 
         this.createChildrenByData();
 
         this.rotateX(Math.PI * 0.25);
         this.rotateY(Math.PI * 0.25);
+        this.haxes.rotateX(Math.PI * 0.25); // 辅助坐标轴旋转
+        this.haxes.rotateY(Math.PI * 0.25);
         setFinish(this.finish);
     }
 
@@ -62,7 +66,7 @@ export class Cube extends Group {
 
         for (let i = 0; i < this.data.elements.length; i++) {
             const square = createSquare(new Color(this.data.elements[i].color), this.data.elements[i]); // 把数据转换为 Object3D 物体
-            this.add(square);
+            this.add(square); // 添加到 Group 中
         }
 
         this.state = new CubeState(this.squares);

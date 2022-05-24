@@ -1,4 +1,4 @@
-import {PerspectiveCamera, Scene, WebGLRenderer} from "three";
+import { PerspectiveCamera, Scene, WebGLRenderer, AxesHelper, LineDashedMaterial } from "three";
 import createCamera from "./components/camera";
 import createScene from "./components/scene";
 import createRenderer from "./components/renderer";
@@ -39,15 +39,33 @@ class Rubiks {
 
         this.startAnimation();
     }
-
+    
+    // 添加辅助坐标轴
+    public addWorldAxes() {
+        // https://threejs.org/docs/#api/zh/helpers/AxesHelper
+        let addWorldAxes = new AxesHelper(3);
+        // (addWorldAxes.material as LineDashedMaterial).dashSize = 0.2;
+        // (addWorldAxes.material as LineDashedMaterial).gapSize = 0.2;
+        // addWorldAxes.material = new LineDashedMaterial({ 
+        //     vertexColors: true, 
+        //     toneMapped: false,
+        //     dashSize: 10,//显示线段的大小。默认为3。
+        //     gapSize: 5,//间隙的大小。默认为1 
+        // })
+        // addWorldAxes.geometry.groupsNeedUpdate = true;
+        // console.log('addWorldAxes', addWorldAxes)
+        this.scene.add(addWorldAxes);
+    }
     public setOrder(order: number) {
         this.scene.remove(...this.scene.children);
         if (this._controls.length > 0) {
             this._controls.forEach((control) => control.dispose());
         }
+        this.addWorldAxes()
 
         const cube = new Cube(order);
         this.scene.add(cube);
+        this.scene.add(cube.haxes); // 添加物体辅助坐标轴
         this.cube = cube;
         this.render();
 
