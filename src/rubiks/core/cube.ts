@@ -1,4 +1,7 @@
-import { Camera, Color, Group, Matrix4, Vector2, Vector3, AxesHelper } from "three";
+import { 
+    Camera, Color, Group, Matrix4, Vector2, Vector3, 
+    Object3D, AxesHelper, PlaneGeometry, MeshBasicMaterial, 
+    CanvasTexture, Mesh } from "three";
 import {setFinish} from "./statusbar";
 import {getAngleBetweenTwoVector2, equalDirection} from "../util/math";
 import {ndcToScreen} from "../util/transform";
@@ -16,11 +19,82 @@ const getTemPos = (square: SquareMesh, squareSize: number) => {
     return pos.add(moveVect);
 };
 
+interface StrConfig {
+        width: number,
+        height: number,
+        // fillStyle: string,
+        color: string,
+        fontSize: number,
+        align: string
+}
+
+function getStrCanvas(str:string,{
+        width = 20,
+        height = 20,
+        color = '#fff',
+        fontSize = 18,
+        align = 'center',
+}: StrConfig = {} as StrConfig) {
+        
+    let canvas = <HTMLCanvasElement>document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    let ctx  = canvas.getContext('2d');
+    if (ctx){
+        ctx.fillStyle = color;
+        ctx.font = fontSize + 'px/1 " bold'; //32 + 'px " bold';
+        let x = 0
+        const tm = ctx.measureText(str)
+        let y = fontSize* 0.8
+
+        switch(align){
+            case 'left':
+                x=0; break;
+            case 'center':
+                x = (width - tm.width)/2
+                break;
+            case 'right':
+                x = width - tm.width
+                break;
+            default:
+                break;
+        }
+        ctx.fillText(str,x,y)
+    }
+    return canvas;
+}
+
+function getStrGeometry(str: string, {
+    width = 0.2,
+    height = 0.2,
+    color = '#fff',
+    fontSize = 18,
+    align = 'center',
+}: StrConfig = {} as StrConfig){
+    const strCfg = {
+        width: width < 20 ? 20 : width,
+        height: height < 20 ? 20 : height,
+        color,
+        fontSize,
+        align,
+    }
+    const gemoetry = new PlaneGeometry(strCfg.width, strCfg.height)
+    let material = new MeshBasicMaterial({ 
+        map: new CanvasTexture(getStrCanvas(str,strCfg)),
+        // transparent: true
+     })
+    let mesh = new Mesh(gemoetry, material)
+    if(width < 20 || height < 20){
+        mesh.scale.set(width / strCfg.width, height / strCfg.height ,1)
+    }
+    return mesh
+}
+
 // http://www.webgl3d.cn/threejs/docs/#api/zh/objects/Group
 export class Cube extends Group {
     private data: CubeData;
     public state!: CubeState;
-    public haxes: AxesHelper; // 辅助坐标轴
+    public haxes: Object3D; // 辅助坐标轴
     public get squares() {
         return this.children as SquareMesh[];
     }
@@ -50,14 +124,31 @@ export class Cube extends Group {
         super();
 
         this.data = new CubeData(order); // 初始化魔方数据
-        this.haxes = new AxesHelper(this.order * 0.8); // 初始化辅助坐标轴
 
         this.createChildrenByData();
 
         this.rotateX(Math.PI * 0.25);
         this.rotateY(Math.PI * 0.25);
-        this.haxes.rotateX(Math.PI * 0.25); // 辅助坐标轴旋转
-        this.haxes.rotateY(Math.PI * 0.25);
+
+        const axesLength = this.order * 0.8
+        let haxes = new AxesHelper(axesLength); // 初始化辅助坐标轴
+        let o3d = new Object3D()
+
+        let xStr = getStrGeometry('x')
+        let yStr = getStrGeometry('y')
+        let zStr = getStrGeometry('z')
+        xStr.position.set(axesLength,0,0)
+        yStr.position.set(0,axesLength,0)
+        zStr.position.set(0,0,axesLength)
+
+        o3d.add(haxes)
+        o3d.add(xStr)
+        o3d.add(yStr)
+        o3d.add(zStr)
+        o3d.rotateX(Math.PI * 0.25); // 辅助坐标轴旋转
+        o3d.rotateY(Math.PI * 0.25);
+
+        this.haxes = o3d
         setFinish(this.finish);
     }
 

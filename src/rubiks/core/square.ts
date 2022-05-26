@@ -64,7 +64,7 @@ export const createSquare = (color: Color, element: CubeElement) => {
             });
             const avatarPlane = new Mesh(geo2, mat3);
             avatarPlane.position.set(0, 0, 0.01); // 位置
-            avatarPlane.scale.set(0.8, 0.8, 0.8); // 缩放
+            avatarPlane.scale.set(0.8, 0.8, 1); // 缩放
             square.add(avatarPlane);
         });
     }
