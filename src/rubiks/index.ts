@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Scene, WebGLRenderer, AxesHelper, LineDashedMaterial, Line, BoxGeometry } from "three";
+import { PerspectiveCamera, Scene, WebGLRenderer, AxesHelper, LineDashedMaterial} from "three";
 import createCamera from "./components/camera";
 import createScene from "./components/scene";
 import createRenderer from "./components/renderer";
@@ -47,29 +47,17 @@ class Rubiks {
         // (addWorldAxes.material as LineDashedMaterial).dashSize = 0.2;
         // (addWorldAxes.material as LineDashedMaterial).gapSize = 0.2;
         let dashe = new LineDashedMaterial({
-            // vertexColors: true,
-            // toneMapped: false,
-            color: 0xaaffff,
-            dashSize: 0.5,//显示线段的大小。默认为3。
-            gapSize: 0.5,//间隙的大小。默认为1
+            vertexColors: true,
+            toneMapped: false,
+            color: 0xffff00,
+            linewidth: 0.6,
+            dashSize: 0.05,//显示线段的大小。默认为3。
+            gapSize: 0.05,//间隙的大小。默认为1
         })
-        // dashe.computeLineDistances();
         addWorldAxes.material = dashe
+        addWorldAxes.computeLineDistances();
         this.scene.add(addWorldAxes);
 
-
-        // 虚线材质对象：产生虚线效果
-        let geometry = new BoxGeometry(4,4,4);
-        let material = new LineDashedMaterial({
-            color: 0x0000ff,
-            dashSize: 0.5,//显示线段的大小。默认为3。
-            gapSize: 0.5,//间隙的大小。默认为1
-        });
-        let line = new Line(geometry, material); //线模型对象
-        //  computeLineDistances方法  计算LineDashedMaterial所需的距离数组
-        // line.computeLineDistances();//计算虚线
-        console.log('line.computeLineDistances();', line.computeLineDistances())
-        this.scene.add(line);
     }
     public setOrder(order: number) {
         this.scene.remove(...this.scene.children);
