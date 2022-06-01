@@ -1,7 +1,7 @@
 import { 
     Camera, Color, Group, Matrix4, Vector2, Vector3, 
     Object3D, AxesHelper, PlaneGeometry, MeshBasicMaterial, 
-    CanvasTexture, Mesh } from "three";
+    CanvasTexture, Mesh, DoubleSide } from "three";
 import {setFinish} from "./statusbar";
 import {getAngleBetweenTwoVector2, equalDirection} from "../util/math";
 import {ndcToScreen} from "../util/transform";
@@ -80,14 +80,20 @@ function getStrGeometry(str: string, {
     }
     const gemoetry = new PlaneGeometry(strCfg.width, strCfg.height)
     let material = new MeshBasicMaterial({ 
-        map: new CanvasTexture(getStrCanvas(str,strCfg)),
+        map: new CanvasTexture(getStrCanvas(str, strCfg)),
+        side: DoubleSide // 双面渲染
         // transparent: true
      })
     let mesh = new Mesh(gemoetry, material)
+    let mesh_ = new Mesh(gemoetry, material)
+    // mesh_.position.set(0, 0, -0.01)
+    // mesh_.rotateY(Math.PI)
     if(width < 20 || height < 20){
-        mesh.scale.set(width / strCfg.width, height / strCfg.height ,1)
+        mesh.scale.set(width / strCfg.width, height / strCfg.height, 1)
+        // mesh_.scale.set(width / strCfg.width, height / strCfg.height ,1)
     }
-    return mesh
+    let res3d =  new Object3D().add(mesh)//.add(mesh_)
+    return res3d
 }
 
 // http://www.webgl3d.cn/threejs/docs/#api/zh/objects/Group
@@ -125,8 +131,10 @@ export class Cube extends Group {
 
         this.data = new CubeData(order); // 初始化魔方数据
 
-        this.createChildrenByData();
+        this.createChildrenByData(); // 魔法数据转为3d对象，初始化控制状态
 
+        // 对应轴线的右手性旋转
+        // 世界坐标系
         this.rotateX(Math.PI * 0.25);
         this.rotateY(Math.PI * 0.25);
 
@@ -149,7 +157,7 @@ export class Cube extends Group {
         o3d.rotateY(Math.PI * 0.25);
 
         this.haxes = o3d
-        setFinish(this.finish);
+        setFinish(this.finish); // 完成状态显示
     }
 
     private createChildrenByData() {

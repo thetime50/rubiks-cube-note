@@ -7,6 +7,12 @@ export interface RotateDirection {
     endSquare: SquareMesh; // 代表方向的终止square，用于记录旋转的local方向
 }
 
+/**
+ * 交互状态控制
+ * 还原状态判断
+ * 交互开始 和交互停止状态数据管理
+ */
+
 class CubeState {
     /** 所有方块 */
     private _squares: SquareMesh[];
@@ -19,7 +25,7 @@ class CubeState {
     /** 正在旋转的方块 */
     public activeSquares: SquareMesh[] = [];
     /** 控制的方块 */
-    public controlSquare: SquareMesh | undefined;
+    public controlSquare: SquareMesh | undefined; // 鼠标第一帧交互的结果??
     /** 旋转方向 */
     public rotateDirection: RotateDirection | undefined;
     /** 旋转轴 */
@@ -81,14 +87,14 @@ class CubeState {
             },
         ];
 
-        for (let i = 0; i < this._squares.length; i++) {
+        for (let i = 0; i < this._squares.length; i++) { // 按小方面体指向的方向归类
             const plane = sixPlane.find((item) => this._squares[i].element.normal.equals(item.nor));
             plane!.squares.push(this._squares[i]);
         }
 
         for (let i = 0; i < sixPlane.length; i++) {
             const plane = sixPlane[i];
-            if (!plane.squares.every((square) => square.element.color === plane.squares[0].element.color)) {
+            if (!plane.squares.every((square) => square.element.color === plane.squares[0].element.color)) { // 每个面上都是相同颜色
                 finish = false;
                 break;
             }

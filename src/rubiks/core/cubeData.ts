@@ -62,6 +62,7 @@ class CubeData {
         const border = (this.cubeOrder * this._size) / 2 - 0.5; // 中心点位置的数值范围
 
         // top and bottom
+        // y轴 红橙
         for (let x = -border; x <= border; x++) {
             for (let z = -border; z <= border; z++) {
                 this.elements.push({
@@ -81,6 +82,7 @@ class CubeData {
         // console.log('* this.elements.length', this.elements.length)
 
         // left and right
+        // x轴 黄绿
         for (let y = -border; y <= border; y++) {
             for (let z = -border; z <= border; z++) {
                 this.elements.push({
@@ -98,6 +100,7 @@ class CubeData {
         }
 
         // front and back
+        // z轴 蓝紫
         for (let x = -border; x <= border; x++) {
             for (let y = -border; y <= border; y++) {
                 this.elements.push({
