@@ -73,6 +73,7 @@ export const createSquare = (color: Color, element: CubeElement) => {
     return square;
 };
 
+// 小方面的3d体和魔方数据
 export class SquareMesh extends Object3D {
     public element: CubeElement;
     public constructor(element: CubeElement) {

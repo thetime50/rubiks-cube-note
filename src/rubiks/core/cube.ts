@@ -12,6 +12,7 @@ import {createSquare, SquareMesh} from "./square";
 /**
  * 获取square向里平移0.5的方块大小的位置
  */
+// 中心点向法线方向向里移动0.5个squareSzie
 const getTemPos = (square: SquareMesh, squareSize: number) => {
     const moveVect = square.element.normal.clone().normalize().multiplyScalar(-0.5 * squareSize);
     const pos = square.element.pos.clone();
@@ -101,6 +102,9 @@ export class Cube extends Group {
     private data: CubeData;
     public state!: CubeState;
     public haxes: Object3D; // 辅助坐标轴
+
+    public d_squareScreen: SquareMesh[] = [];
+
     public get squares() {
         return this.children as SquareMesh[];
     }
@@ -188,7 +192,7 @@ export class Cube extends Group {
             return;
         }
 
-        const screenDir = mouseCurPos.clone().sub(mousePrePos);
+        const screenDir = mouseCurPos.clone().sub(mousePrePos); // 鼠标的移动方向向量
         if (screenDir.x === 0 && screenDir.y === 0) return;
         if (!this.state.inRotation) {
             const squareScreenPos = this.getSquareScreenPos(controlSquare, camera, winSize) as Vector2;
@@ -197,9 +201,12 @@ export class Cube extends Group {
             const squarePos = controlSquare.element.pos;
 
             // 与 controlSquare 在同一面的其他 Square
-            const commonDirSquares = this.squares.filter((square) => square.element.normal.equals(squareNormal) && !square.element.pos.equals(squarePos));
+            const commonDirSquares = this.squares.filter((square) =>  // 同一面并且不是自己
+                square.element.normal.equals(squareNormal) && !square.element.pos.equals(squarePos)
+            );
 
             // square1 和 sqaure2 垂直和竖直方向的同一面的两个 SquareMesh
+            // 找到同一行和同一列上的两个 SquareMesh
             let square1: SquareMesh | undefined;
             let square2: SquareMesh | undefined;
             for (let i = 0; i < commonDirSquares.length; i++) {
@@ -284,16 +291,19 @@ export class Cube extends Group {
             // 旋转的方块：由 controlSquare 位置到要旋转的方块的位置的向量，与旋转的轴是垂直的，通过这一特性可以筛选出所有要旋转的方块
             const rotateSquares: SquareMesh[] = [];
             const controlTemPos = getTemPos(controlSquare, this.data.elementSize);
+            // const controlTemPos = controlSquare.element.pos.clone()
+            // 为什么要做一个位置偏移? 让垂直面(侧面)的中心点也能落小立方块的中心点上
 
             for (let i = 0; i < this.squares.length; i++) {
                 const squareTemPos = getTemPos(this.squares[i], this.data.elementSize);
+                // const squareTemPos = this.squares[i].element.pos
                 const squareVec = controlTemPos.clone().sub(squareTemPos);
                 if (squareVec.dot(rotateAxisLocal) === 0) {
                     rotateSquares.push(this.squares[i]);
                 }
             }
 
-            this.state.setRotating(controlSquare, rotateSquares, rotateDir, rotateAxisLocal);
+            this.state.setRotating(controlSquare, rotateSquares, rotateDir, rotateAxisLocal); // 开始旋转
         }
 
         const rotateSquares = this.state.activeSquares; // 旋转的方块
@@ -406,7 +416,13 @@ export class Cube extends Group {
             }
         }
 
-        this.state.resetState();
+        if (this.d_squareScreen){
+            for (; this.d_squareScreen.length;){
+                let item = this.d_squareScreen.pop()
+                item!.children[0].scale.set(0.9, 0.9, 0.9);
+            }
+        }
+        this.state.resetState(); // 结束旋转 
     }
 
 
@@ -427,12 +443,14 @@ export class Cube extends Group {
         const p1 = new Vector3(-width / 2, 0, 0);
         const p2 = new Vector3(width / 2, 0, 0);
 
+        // https://threejs.org/docs/index.html#api/en/math/Vector3.project
+        // 坐标点在相机坐标系中的位置
         p1.project(camera);
         p2.project(camera);
 
         const {w, h} = winSize;
         const screenP1 = ndcToScreen(p1, w, h);
-        const screenP2 = ndcToScreen(p2, w, h);
+        const screenP2 = ndcToScreen(p2, w, h); // todo
 
         return Math.abs(screenP2.x - screenP1.x);
     }
@@ -444,9 +462,22 @@ export class Cube extends Group {
         if (!this.squares.includes(square)) {
             return null;
         }
+        // 一次点击会触发3次
+        this.d_squareScreen.push(square);
+        square.children[0].scale.set(0.7, 0.7, 0.7);
 
+        // this.matrix: The local transform matrix // https://threejs.org/docs/index.html#api/en/core/Object3D.matrix
+        // square.matrixWorld: The global transform of the object // https://threejs.org/docs/index.html#api/en/core/Object3D.matrixWorld
+        // Matrix4.multiply: Post-multiplies this matrix by m. // https://threejs.org/docs/index.html#api/en/math/Matrix4.multiply
         const mat = new Matrix4().multiply(square.matrixWorld).multiply(this.matrix);
+        // new Matrix4() 得到一个单位矩阵 对角为1
+        // .matrix描述了物体自己的 偏移缩放旋转 变换数据
+        // .matrixWorld 是本地矩阵和所有父对象本地矩阵的乘积，或者是对象本地矩阵和父对象的世界矩阵的乘积
+        // Three.js本地矩阵.materix和世界矩阵.matrixWorld http://www.yanhuangxueyuan.com/doc/Three.js/matrixWorld.html
 
+        // Vector3.applyMatrix4: v3的第4维度为1和v4相乘,并且除以透视? https://threejs.org/docs/#api/en/math/Vector3.applyMatrix4
+        // 在v3上应用v4转换, v4和v4 直接相乘，v4用在v3上用applyMatrix4
+        // new Vector3() 是0,0,0啊
         const pos = new Vector3().applyMatrix4(mat);
         pos.project(camera);
 

@@ -74,7 +74,7 @@ class Rubiks {
 
         const winW = this.renderer.domElement.clientWidth;
         const winH = this.renderer.domElement.clientHeight;
-        const coarseSize = cube.getCoarseCubeSize(this.camera, {w: winW, h: winH});
+        const coarseSize = cube.getCoarseCubeSize(this.camera, {w: winW, h: winH}); // 渲染尺寸
 
         const ratio = Math.max(2.2 / (winW / coarseSize), 2.2 / (winH / coarseSize));
         this.camera.position.z *= ratio; // 这里每次累乘有点奇怪

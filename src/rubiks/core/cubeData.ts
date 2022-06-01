@@ -11,7 +11,7 @@ type ColorRepresentation = string | number;
 export interface CubeElement {
     color: ColorRepresentation;
     pos: Vector3; // 每个小方面物体的中心位置
-    normal: Vector3; // 每个小方面物体的法向量 (指向的点)
+    normal: Vector3; // 每个小方面物体的法向量 (相对小方面中心指向的点)
     withLogo?: boolean;
 }
 
