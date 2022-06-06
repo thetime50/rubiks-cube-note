@@ -5,3 +5,9 @@ export const setFinish = (finish: boolean) => {
         finishEle!.innerText = finish ? "👏 恭喜!" : "🤔 加油";
     }
 };
+
+export const afterDotDom = (x:Number,y:Number) => {
+    const el = document.getElementById("point");
+    el!.style.left = `${x}px`;
+    el!.style.top = `${y}px`;
+}

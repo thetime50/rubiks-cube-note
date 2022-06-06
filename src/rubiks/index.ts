@@ -69,6 +69,7 @@ class Rubiks {
         const cube = new Cube(order);
         this.scene.add(cube);
         this.scene.add(cube.haxes); // 添加物体辅助坐标轴
+        this.scene.add(cube.daxes); // 添加物体辅助坐标轴
         this.cube = cube;
         this.render();
 

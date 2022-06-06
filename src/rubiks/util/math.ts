@@ -11,6 +11,7 @@ export const getAngleBetweenTwoVector2 = (vec1: Vector2, vec2: Vector2) => {
     return angle;
 };
 
+// 判断两向量方向相同
 export const equalDirection = (vec1: Vector3, vec2: Vector3, precision = 0.1) => {
     const angle = vec1.angleTo(vec2);
     

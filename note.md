@@ -38,3 +38,10 @@ mesh2.position.x = 200 // 物体2偏移200
 两向量叉积得到垂直的向量
 
 
+https://docs.github.com/cn/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions
+
+- Vector.dot  
+  $A\cdot B = |A||B|cos(\theta)$ 一条向量乘以了一条向量的投影  
+- Vector3.multiply 
+  得到与两个向量都垂直的向量
+

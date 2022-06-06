@@ -2,7 +2,7 @@ import {
     Camera, Color, Group, Matrix4, Vector2, Vector3, 
     Object3D, AxesHelper, PlaneGeometry, MeshBasicMaterial, 
     CanvasTexture, Mesh, DoubleSide } from "three";
-import {setFinish} from "./statusbar";
+import { setFinish, afterDotDom } from "./statusbar";
 import {getAngleBetweenTwoVector2, equalDirection} from "../util/math";
 import {ndcToScreen} from "../util/transform";
 import CubeData, {CubeElement} from "./cubeData";
@@ -102,6 +102,7 @@ export class Cube extends Group {
     private data: CubeData;
     public state!: CubeState;
     public haxes: Object3D; // 辅助坐标轴
+    public daxes: Object3D; // 调试用标轴
 
     public d_squareScreen: SquareMesh[] = [];
 
@@ -130,12 +131,30 @@ export class Cube extends Group {
         return this.state.validateFinish();
     }
 
+    public getLabAxes(axesLength:number){
+
+        let haxes = new AxesHelper(axesLength); // 初始化辅助坐标轴
+        let o3d = new Object3D()
+
+        let xStr = getStrGeometry('x')
+        let yStr = getStrGeometry('y')
+        let zStr = getStrGeometry('z')
+        xStr.position.set(axesLength, 0, 0)
+        yStr.position.set(0, axesLength, 0)
+        zStr.position.set(0, 0, axesLength)
+
+        o3d.add(haxes)
+        o3d.add(xStr)
+        o3d.add(yStr)
+        o3d.add(zStr)
+        return o3d
+    }
     public constructor(order = 3) {
         super();
 
         this.data = new CubeData(order); // 初始化魔方数据
 
-        this.createChildrenByData(); // 魔法数据转为3d对象，初始化控制状态
+        this.createChildrenByData(); // 魔方数据转为3d对象，初始化控制状态
 
         // 对应轴线的右手性旋转
         // 世界坐标系
@@ -143,24 +162,15 @@ export class Cube extends Group {
         this.rotateY(Math.PI * 0.25);
 
         const axesLength = this.order * 0.8
-        let haxes = new AxesHelper(axesLength); // 初始化辅助坐标轴
-        let o3d = new Object3D()
+        let haxes = this.getLabAxes(axesLength)
+        haxes.rotateX(Math.PI * 0.25); // 辅助坐标轴旋转
+        haxes.rotateY(Math.PI * 0.25);
 
-        let xStr = getStrGeometry('x')
-        let yStr = getStrGeometry('y')
-        let zStr = getStrGeometry('z')
-        xStr.position.set(axesLength,0,0)
-        yStr.position.set(0,axesLength,0)
-        zStr.position.set(0,0,axesLength)
+        this.haxes = haxes
+        
+        let daxes = this.getLabAxes(this.order * 0.3)
+        this.daxes = daxes
 
-        o3d.add(haxes)
-        o3d.add(xStr)
-        o3d.add(yStr)
-        o3d.add(zStr)
-        o3d.rotateX(Math.PI * 0.25); // 辅助坐标轴旋转
-        o3d.rotateY(Math.PI * 0.25);
-
-        this.haxes = o3d
         setFinish(this.finish); // 完成状态显示
     }
 
@@ -188,14 +198,15 @@ export class Cube extends Group {
             return;
         }
 
-        if (!this.squares.includes(controlSquare)) {
+        if (!this.squares.includes(controlSquare)) { // 点击的不是魔方方块不触发方块旋转
             return;
         }
 
         const screenDir = mouseCurPos.clone().sub(mousePrePos); // 鼠标的移动方向向量
         if (screenDir.x === 0 && screenDir.y === 0) return;
-        if (!this.state.inRotation) {
-            const squareScreenPos = this.getSquareScreenPos(controlSquare, camera, winSize) as Vector2;
+        if (!this.state.inRotation) { // 开始触发旋转
+            const squareScreenPos = this.getSquareScreenPos(controlSquare, camera, winSize) as Vector2; // 获取触发方块的屏幕坐标
+            afterDotDom(squareScreenPos.x, squareScreenPos.y )
 
             const squareNormal = controlSquare.element.normal;
             const squarePos = controlSquare.element.pos;
@@ -312,19 +323,20 @@ export class Cube extends Group {
         // 旋转的角度：使用 screenDir 在旋转方向上的投影长度，投影长度越长，旋转角度越大
         // 投影长度的正负值影响魔方旋转的角度方向
         // 旋转的角度 = 投影的长度 / 魔方的尺寸 * 90度
-        const temAngle = getAngleBetweenTwoVector2(this.state.rotateDirection!.screenDir, screenDir);
-        const screenDirProjectRotateDirLen = Math.cos(temAngle) * screenDir.length();
-        const coarseCubeSize = this.getCoarseCubeSize(camera, winSize);
+        const temAngle = getAngleBetweenTwoVector2(this.state.rotateDirection!.screenDir, screenDir); // 鼠标移动方向和旋转方向的夹角
+        const screenDirProjectRotateDirLen = Math.cos(temAngle) * screenDir.length(); // 鼠标移动距离在旋转方向上的投影
+        const coarseCubeSize = this.getCoarseCubeSize(camera, winSize); // 魔方尺寸
         const rotateAnglePI = screenDirProjectRotateDirLen / coarseCubeSize * Math.PI * 0.5; // 旋转角度
         const newRotateAnglePI = rotateAnglePI - this.state.rotateAnglePI;
         this.state.rotateAnglePI = rotateAnglePI;
 
         const rotateMat = new Matrix4();
-        rotateMat.makeRotationAxis(rotateAxisLocal!, newRotateAnglePI);
+        // https://threejs.org/docs/index.html?q=Matrix4#api/en/math/Matrix4.makeRotationAxis
+        rotateMat.makeRotationAxis(rotateAxisLocal!, newRotateAnglePI); // 旋转矩阵
 
         for (let i = 0; i < rotateSquares.length; i++) {
-            rotateSquares[i].applyMatrix4(rotateMat);
-            rotateSquares[i].updateMatrix();
+            rotateSquares[i].applyMatrix4(rotateMat); // 对小方面应用旋转变换
+            rotateSquares[i].updateMatrix(); // 更新结果 // 在random 的时候会自动更新，如果debug中间过程需要手动调用更新
         }
     }
 
@@ -376,10 +388,10 @@ export class Cube extends Group {
         this.state.rotateAnglePI += needRotateAnglePI;
 
         // 更新 data：CubeElement 的状态，旋转后法向量、位置等发生了变化
-        const angleRelative360PI = this.state.rotateAnglePI % (Math.PI * 2);
+        const angleRelative360PI = this.state.rotateAnglePI % (Math.PI * 2); // 把旋转角度限制在360度以内
         // const timesOfRight = angleRelative360PI / rightAnglePI; // 旋转的角度相当于几个90度
 
-        if (Math.abs(angleRelative360PI) > 0.1) {
+        if (Math.abs(angleRelative360PI) > 0.1) { // 不是整360 度的
 
             // 更新位置和法向量
             const rotateMat2 = new Matrix4();
@@ -391,6 +403,7 @@ export class Cube extends Group {
             }[] = [];
 
             for (let i = 0; i < this.state.activeSquares.length; i++) {
+                // 更新 SquareMesh.element 的法向量和中心位置数据 // 回头这些写成get 方法
                 const nor = this.state.activeSquares[i].element.normal.clone();
                 const pos = this.state.activeSquares[i].element.pos.clone();
 
@@ -398,10 +411,11 @@ export class Cube extends Group {
                 pos.applyMatrix4(rotateMat2); // 旋转后的位置
 
                 // 找到与旋转后对应的方块，更新它的颜色
-                for (let j = 0; j < this.state.activeSquares.length; j++) {
+                // ??
+                for (let j = 0; j < this.state.activeSquares.length; j++) { // 为著名又要重新找一遍
                     const nor2 = this.state.activeSquares[j].element.normal.clone();
                     const pos2 = this.state.activeSquares[j].element.pos.clone();
-                    if (equalDirection(nor, nor2) && pos.distanceTo(pos2) < 0.1) {
+                    if (equalDirection(nor, nor2) && pos.distanceTo(pos2) < 0.1) { // 法向量角度相同 并且 pos 到pos2的距离为0 (位置相同)
                         pn.push({
                             nor: nor2,
                             pos: pos2
@@ -410,7 +424,7 @@ export class Cube extends Group {
                 }
             }
 
-            for (let i = 0; i < this.state.activeSquares.length; i++) {
+            for (let i = 0; i < this.state.activeSquares.length; i++) { // 更新限制角度后的向量
                 this.state.activeSquares[i].element.normal = pn[i].nor;
                 this.state.activeSquares[i].element.pos = pn[i].pos;
             }
@@ -466,6 +480,8 @@ export class Cube extends Group {
         this.d_squareScreen.push(square);
         square.children[0].scale.set(0.7, 0.7, 0.7);
 
+        // console.log('square.matrixWorld, this.matrix', square.matrixWorld, this.matrix)
+
         // this.matrix: The local transform matrix // https://threejs.org/docs/index.html#api/en/core/Object3D.matrix
         // square.matrixWorld: The global transform of the object // https://threejs.org/docs/index.html#api/en/core/Object3D.matrixWorld
         // Matrix4.multiply: Post-multiplies this matrix by m. // https://threejs.org/docs/index.html#api/en/math/Matrix4.multiply
@@ -474,12 +490,21 @@ export class Cube extends Group {
         // .matrix描述了物体自己的 偏移缩放旋转 变换数据
         // .matrixWorld 是本地矩阵和所有父对象本地矩阵的乘积，或者是对象本地矩阵和父对象的世界矩阵的乘积
         // Three.js本地矩阵.materix和世界矩阵.matrixWorld http://www.yanhuangxueyuan.com/doc/Three.js/matrixWorld.html
+        // 后面的这个.multiply(this.matrix);好像不是必要的
 
         // Vector3.applyMatrix4: v3的第4维度为1和v4相乘,并且除以透视? https://threejs.org/docs/#api/en/math/Vector3.applyMatrix4
         // 在v3上应用v4转换, v4和v4 直接相乘，v4用在v3上用applyMatrix4
         // new Vector3() 是0,0,0啊
         const pos = new Vector3().applyMatrix4(mat);
         pos.project(camera);
+        if (square == this.d_squareScreen[0]){
+            this.daxes.position.set(0, 0, 0)
+            this.daxes.rotation.set(0, 0, 0)
+            this.daxes.scale.set(1, 1, 1)
+            this.daxes.updateMatrix()
+            this.daxes.applyMatrix4(mat)
+            this.daxes.position.add(new Vector3( 4, 0, 0))
+        }
 
         const {w, h} = winSize;
         return ndcToScreen(pos, w, h);
