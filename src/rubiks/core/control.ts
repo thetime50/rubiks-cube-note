@@ -42,6 +42,8 @@ abstract class Control {
     protected get domElement() {
         return this.renderer.domElement;
     }
+    // https://threejs.org/docs/index.html?q=Raycaster#api/en/core/Raycaster
+    // 点-相机投射
     private raycaster = new Raycaster();
     public constructor(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, cube: Cube) {
         this.cube = cube;
@@ -57,11 +59,11 @@ abstract class Control {
         this.raycaster.setFromCamera({x, y}, this.camera);
 
         let intersectSquares: {
-            distance: number;
-            square: SquareMesh;
+            distance: number; // 距离
+            square: SquareMesh; // 碰撞的方面
         }[] = [];
         for (let i = 0; i < this.cube.squares.length; i++) {
-            const intersects = this.raycaster.intersectObjects([this.cube.squares[i]]);
+            const intersects = this.raycaster.intersectObjects([this.cube.squares[i]]); // 返回相交体的列表
             if (intersects.length > 0) {
                 intersectSquares.push({
                     distance: intersects[0].distance,
@@ -85,7 +87,7 @@ abstract class Control {
         }
         this.start = true;
         this.startPos = new Vector2()
-        const intersect = this.getIntersects(offsetX, offsetY);
+        const intersect = this.getIntersects(offsetX, offsetY); // 获取点击射线的相交方块
 
         this._square = null;
         if (intersect) {
@@ -97,13 +99,14 @@ abstract class Control {
     }
 
     protected operateDrag(offsetX: number, offsetY: number, movementX: number, movementY: number) {
-        if (this.start && this.lastOperateUnfinish === false) {
-            if (this._square) {
+        // 鼠标位置 / 相对上一时刻的delta
+        if (this.start && this.lastOperateUnfinish === false) { // 鼠标动作开始 并且没有启动动画
+            if (this._square) { // 有点击到方块
                 const curMousePos = new Vector2(offsetX, offsetY);
                 this.cube.rotateOnePlane(this.startPos, curMousePos, this._square, this.camera, {w: this.domElement.clientWidth, h: this.domElement.clientHeight});
-            } else {
+            } else { // 没有点击到方块
                 const dx = movementX;
-                const dy = -movementY;
+                const dy = -movementY; // 和three 坐标轴方向对齐
 
                 const movementLen = Math.sqrt(dx * dx + dy * dy);
                 const cubeSize = this.cube.getCoarseCubeSize(
@@ -116,7 +119,11 @@ abstract class Control {
                 const rotateAngle = Math.PI * movementLen / cubeSize;
 
                 const moveVect = new Vector2(dx, dy);
+                // https://threejs.org/docs/index.html?q=Vector2#api/en/math/Vector2.rotateAround
                 const rotateDir = moveVect.rotateAround(new Vector2(0, 0), Math.PI * 0.5);
+                // 鼠标向x轴正方向运动 对应围绕y轴右手正方向旋转
+                // 鼠标向y轴正方向运动 对应围绕x轴右手负方向旋转
+                // 这rotateDir 是旋转轴 (有方向)
 
                 rotateAroundWorldAxis(this.cube, new Vector3(rotateDir.x, rotateDir.y, 0), rotateAngle);
                 rotateAroundWorldAxis(this.cube.haxes, new Vector3(rotateDir.x, rotateDir.y, 0), rotateAngle); // 旋转魔方辅助坐标轴
@@ -127,15 +134,16 @@ abstract class Control {
 
     protected operateEnd() {
         if (this.lastOperateUnfinish === false) {
-            if (this._square) {
+            // 启动一下后续动画
+            if (this._square) { // 有点击到方块
                 const rotateAnimation = this.cube.getAfterRotateAnimation();
                 this.lastOperateUnfinish = true;
                 const animation = (time: number) => {
-                    const next = rotateAnimation(time);
+                    const next = rotateAnimation(time); // 更新物体旋转
                     this.renderer.render(this.scene, this.camera);
-                    if (next) {
+                    if (next) { // 动画还没结束
                         requestAnimationFrame(animation);
-                    } else {
+                    } else { // 动画结束
                         setFinish(this.cube.finish);
                         this.lastOperateUnfinish = false;
                     }
