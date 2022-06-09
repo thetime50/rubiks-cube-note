@@ -35,7 +35,7 @@ abstract class Control {
     protected scene: Scene;
     protected cube: Cube;
     protected camera: PerspectiveCamera;
-    protected _square: SquareMesh | null = null;
+    protected _square: SquareMesh | null = null; // 点击射线选中的方面
     private start = false;
     private lastOperateUnfinish = false;
     private startPos: Vector2 = new Vector2();

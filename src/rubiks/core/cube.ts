@@ -99,8 +99,8 @@ function getStrGeometry(str: string, {
 
 // http://www.webgl3d.cn/threejs/docs/#api/zh/objects/Group
 export class Cube extends Group {
-    private data: CubeData;
-    public state!: CubeState;
+    private data: CubeData; // 魔方数据的结构 生成 保存 恢复 数据包括 颜色 阶数 每个小面的颜色位置方向
+    public state!: CubeState; // 魔方交互状态 鼠标选中的方面 一起旋转的方面集合 旋转方向 旋转轴 旋转过程和动画 已复原状态
     public haxes: Object3D; // 辅助坐标轴
     public daxes: Object3D; // 调试用标轴
 
@@ -453,18 +453,19 @@ export class Cube extends Group {
      * 获取一个粗糙的魔方屏幕尺寸
      */
     public getCoarseCubeSize(camera: Camera, winSize: {w: number; h: number}) {
+        // three尺寸转换到屏幕px尺寸
         const width = this.order * this.squareSize;
         const p1 = new Vector3(-width / 2, 0, 0);
         const p2 = new Vector3(width / 2, 0, 0);
 
         // https://threejs.org/docs/index.html#api/en/math/Vector3.project
-        // 坐标点在相机坐标系中的位置
+        // 坐标点在相机 坐标系 (画面位置)中的位置百分比 //??
         p1.project(camera);
         p2.project(camera);
 
         const {w, h} = winSize;
         const screenP1 = ndcToScreen(p1, w, h);
-        const screenP2 = ndcToScreen(p2, w, h); // todo
+        const screenP2 = ndcToScreen(p2, w, h);
 
         return Math.abs(screenP2.x - screenP1.x);
     }

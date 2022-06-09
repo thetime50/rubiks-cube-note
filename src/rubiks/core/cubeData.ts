@@ -3,8 +3,8 @@ import {Vector3} from "three";
 type ColorRepresentation = string | number;
 
 /**
- * 魔法数据类，主要是魔法数据的结构 生成 保存 恢复
- *   数据包括 颜色 阶数 每个小面的数据
+ * 魔法数据类，主要是魔方数据的结构 生成 保存 恢复
+ *   数据包括 颜色 阶数 每个小面的颜色位置方向
  */
 
 // 每个小面的数据类型
