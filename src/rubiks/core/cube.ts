@@ -486,7 +486,7 @@ export class Cube extends Group {
         // this.matrix: The local transform matrix // https://threejs.org/docs/index.html#api/en/core/Object3D.matrix
         // square.matrixWorld: The global transform of the object // https://threejs.org/docs/index.html#api/en/core/Object3D.matrixWorld
         // Matrix4.multiply: Post-multiplies this matrix by m. // https://threejs.org/docs/index.html#api/en/math/Matrix4.multiply
-        const mat = new Matrix4().multiply(square.matrixWorld).multiply(this.matrix);
+        const mat = new Matrix4().multiply(square.matrixWorld)//.multiply(this.matrix);
         // new Matrix4() 得到一个单位矩阵 对角为1
         // .matrix描述了物体自己的 偏移缩放旋转 变换数据
         // .matrixWorld 是本地矩阵和所有父对象本地矩阵的乘积，或者是对象本地矩阵和父对象的世界矩阵的乘积
@@ -496,7 +496,8 @@ export class Cube extends Group {
         // Vector3.applyMatrix4: v3的第4维度为1和v4相乘,并且除以透视? https://threejs.org/docs/#api/en/math/Vector3.applyMatrix4
         // 在v3上应用v4转换, v4和v4 直接相乘，v4用在v3上用applyMatrix4
         // new Vector3() 是0,0,0啊
-        const pos = new Vector3().applyMatrix4(mat);
+        // const pos = new Vector3().applyMatrix4(mat);
+        const pos  = square.getWorldPosition(new Vector3());
         pos.project(camera);
         if (square == this.d_squareScreen[0]){
             this.daxes.position.set(0, 0, 0)
