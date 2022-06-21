@@ -122,7 +122,7 @@ export class Dbg {
         })
     }
     // three 相机中心坐标
-    lineAdd(start: Vector2, vec: Vector2, color: string = 'linear-gradient( #2222ff,#ddddff )') {
+    lineAdd(start: Vector2, vec: Vector2, color: string = 'linear-gradient(90deg, #2222ff,#ddddff )') {
         let id = `line-${Math.random().toString(36).slice(2, 9)}`;
         this.lineArr.push({
             start,
@@ -158,7 +158,7 @@ export class Dbg {
         return id
     }
     // 页面的坐标发行 y和three 的相反
-    webLineAdd(start: Vector2, vec: Vector2, color: string = 'linear-gradient( #2222ff,#ddddff )') {
+    webLineAdd(start: Vector2, vec: Vector2, color: string = 'linear-gradient(90deg, #2222ff,#ddddff )') {
         return this.lineAdd(
             new Vector2(start.x, -start.y),
             new Vector2(vec.x, -vec.y),
