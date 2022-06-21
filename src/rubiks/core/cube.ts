@@ -9,6 +9,8 @@ import CubeData, {CubeElement} from "./cubeData";
 import CubeState, {RotateDirection} from "./cubeState";
 import {createSquare, SquareMesh} from "./square";
 
+import { dbg } from "../util/dbg";
+
 /**
  * 获取square向里平移0.5的方块大小的位置
  */
@@ -253,8 +255,12 @@ export class Cube extends Group {
                 return;
             }
 
+            dbg?.lineRemove()
             const square1ScreenPos = this.getSquareScreenPos(square1, camera, winSize) as Vector2;
             const square2ScreenPos = this.getSquareScreenPos(square2, camera, winSize) as Vector2;
+            let s1 = new Vector2(square1ScreenPos.x, square1ScreenPos.y)
+            let s2 = new Vector2(square2ScreenPos.x, square2ScreenPos.y)
+            console.log('square1ScreenPos', (s1.angle() - s2.angle() )/ Math.PI * 180)
 
             // 记录可能旋转的四个方向
             const squareDirs: RotateDirection[] = [];
@@ -281,6 +287,10 @@ export class Cube extends Group {
                 startSquare: square2,
                 endSquare: controlSquare
             });
+            dbg?.lineAdd(new Vector2(0, 0), squareDirs[0].screenDir)
+            dbg?.lineAdd(new Vector2(0, 0), squareDirs[1].screenDir)
+            dbg?.lineAdd(new Vector2(0, 0), squareDirs[2].screenDir)
+            dbg?.lineAdd(new Vector2(0, 0), squareDirs[3].screenDir)
 
             // 根据可能旋转的四个方向向量与鼠标平移方向的夹角确定旋转的方向，夹角最小的方向即为旋转方向
             let minAngle = Math.abs(getAngleBetweenTwoVector2(squareDirs[0].screenDir, screenDir));
@@ -288,6 +298,7 @@ export class Cube extends Group {
 
             for (let i = 0; i < squareDirs.length; i++) {
                 const angle = Math.abs(getAngleBetweenTwoVector2(squareDirs[i].screenDir, screenDir));
+                console.log('angle', angle/ Math.PI * 180)
 
                 if (minAngle > angle) {
                     minAngle = angle;

@@ -4,6 +4,7 @@ import createScene from "./components/scene";
 import createRenderer from "./components/renderer";
 import {Cube} from "./core/cube";
 import Control, {MouseControl, TouchControl} from "./core/control";
+import { dbg, initDbg } from "./util/dbg";
 
 const setSize = (container: Element, camera: PerspectiveCamera, renderer: WebGLRenderer) => {
     // Set the camera's aspect ratio
@@ -27,6 +28,7 @@ class Rubiks {
         this.camera = createCamera();
         this.scene = createScene("#478967");
         this.renderer = createRenderer();
+        initDbg(this.renderer, this.scene, this.camera,);
         container.appendChild(this.renderer.domElement);
 
         // auto resize
