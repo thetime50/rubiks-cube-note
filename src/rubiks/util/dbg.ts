@@ -116,13 +116,13 @@ export class Dbg {
         ids.forEach(id => {
             const index = this.lineArr.findIndex(v => v.id === id);
             if(index >= 0){
-                console.log('id', id)
                 this.lineArr.splice(index, 1);
                 dom.removeChild(dom.querySelector('#'+id)!);
             }
         })
     }
-    lineAdd(start: Vector2, vec: Vector2) {
+    // three 相机中心坐标
+    lineAdd(start: Vector2, vec: Vector2, color: string = 'linear-gradient( #2222ff,#ddddff )') {
         let id = `line-${Math.random().toString(36).slice(2, 9)}`;
         this.lineArr.push({
             start,
@@ -138,7 +138,7 @@ export class Dbg {
         let div = document.createElement('div');
         div.id = id;
         div.style.position = 'absolute';
-        div.style.backgroundColor = '#8888ff';
+        div.style.background = color;
 
         let end = start.clone().add(vec);
         let width = vec.length()
@@ -156,6 +156,14 @@ export class Dbg {
         // console.log(`rotate(${angle}deg) translate(${tx}px, ${ty}px)`)
         dom.appendChild(div);
         return id
+    }
+    // 页面的坐标发行 y和three 的相反
+    webLineAdd(start: Vector2, vec: Vector2, color: string = 'linear-gradient( #2222ff,#ddddff )') {
+        return this.lineAdd(
+            new Vector2(start.x, -start.y),
+            new Vector2(vec.x, -vec.y),
+            color
+        )
     }
 }
 
